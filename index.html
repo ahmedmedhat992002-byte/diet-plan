@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سيستم الكارب سايكل الذكي | Body Recomposition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                            950: '#080d1a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #080d1a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .high-carb-glow {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+        }
+        .low-carb-glow {
+            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.25);
+        }
+        .meal-checked {
+            opacity: 0.65;
+            border-color: rgba(16, 185, 129, 0.5) !important;
+            background: rgba(6, 78, 59, 0.15) !important;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16 selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Top Navigation / Header -->
+    <header class="sticky top-0 z-40 glass-card border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div id="headerIconBox" class="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xl shadow-inner transition-colors duration-300">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-black tracking-tight text-white">سيستم الكارب سايكل الذكي</h1>
+                        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Recomp Pro</span>
+                    </div>
+                    <p class="text-xs text-slate-400">حاسبة الجرامات الدقيقة قبل وبعد الطبخ لبناء العضل الصافي والتنشيف</p>
+                </div>
+            </div>
+
+            <!-- Quick Profile Stats Bar -->
+            <div class="flex items-center gap-2 sm:gap-3 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+                <div class="px-3 py-1 rounded-lg bg-slate-800/60 flex items-center gap-2">
+                    <i class="fa-solid fa-weight-scale text-emerald-400 text-xs"></i>
+                    <span class="text-xs text-slate-400">الوزن:</span>
+                    <input id="userWeightInput" type="number" step="0.1" value="78.7" onchange="updateProfileStats()" class="w-14 bg-transparent text-white font-bold text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded px-1 text-center" title="تعديل الوزن الحالي">
+                    <span class="text-xs text-slate-400">كجم</span>
+                </div>
+                <div class="px-3 py-1 rounded-lg bg-slate-800/60 hidden sm:flex items-center gap-2">
+                    <i class="fa-solid fa-ruler-vertical text-sky-400 text-xs"></i>
+                    <span class="text-xs text-slate-400">الطول:</span>
+                    <input id="userHeightInput" type="number" value="178" onchange="updateProfileStats()" class="w-12 bg-transparent text-white font-bold text-sm focus:outline-none focus:ring-1 focus:ring-sky-500 rounded px-1 text-center" title="تعديل الطول">
+                    <span class="text-xs text-slate-400">سم</span>
+                </div>
+                <button onclick="resetToDefaults()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition flex items-center gap-1" title="إعادة ضبط الإعدادات الأصلية">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden md:inline">ضبط افتراضي</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
+
+        <!-- SECTION 1: Interactive Day & System Control Panel -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Day Mode Switcher & Core Settings (8 cols) -->
+            <div id="mainControlCard" class="lg:col-span-8 glass-card rounded-2xl p-5 sm:p-6 high-carb-glow transition-all duration-300">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-800">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders"></i> لوحة التحكم اليومية
+                        </span>
+                        <h2 class="text-xl font-extrabold text-white mt-0.5">اختار نظام يومك وتفضيلاتك</h2>
+                    </div>
+                    <!-- 4-Week Checkpoint Fine-Tuner Pill -->
+                    <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
+                        <span class="text-[11px] text-slate-400 px-2">تعديل الـ 4 أسابيع:</span>
+                        <button id="tweakCutBtn" onclick="setMacroTweak('cut')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+                            -30ج كارب
+                        </button>
+                        <button id="tweakNormalBtn" onclick="setMacroTweak('normal')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition bg-slate-700 text-white">
+                            الأساسي
+                        </button>
+                        <button id="tweakBoostBtn" onclick="setMacroTweak('boost')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+                            +50ج كارب
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. Day Type Big Toggle Buttons -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-5">
+                    <!-- High Carb Button -->
+                    <button id="btnHighCarb" onclick="setDayType('high')" class="relative overflow-hidden group p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 text-right transition-all duration-200 flex items-start justify-between">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span class="text-xs font-bold text-emerald-400 uppercase">High Carb Day</span>
+                            </div>
+                            <h3 class="text-lg font-black text-white">يوم تمرين حديد ومقاومة</h3>
+                            <p class="text-xs text-slate-300 leading-relaxed">ضخ جليكوجين عالي في العضلات، طاقة قصوى للتمرين وبناء عضلي صافي (~2800 سعرة)</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg shrink-0">
+                            <i class="fa-solid fa-fire-flame-curved"></i>
+                        </div>
+                    </button>
+
+                    <!-- Low Carb Button -->
+                    <button id="btnLowCarb" onclick="setDayType('low')" class="relative overflow-hidden group p-4 rounded-2xl border-2 border-slate-800 bg-slate-900/60 hover:border-slate-700 text-right transition-all duration-200 flex items-start justify-between">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                                <span class="text-xs font-bold text-amber-400 uppercase">Low Carb Day</span>
+                            </div>
+                            <h3 class="text-lg font-black text-white">يوم راحة / مجهود خفيف</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">رفع حساسية الإنسولين وحرق الدهون مع رفع البروتين والدهون الصحية (~2400 سعرة)</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-lg shrink-0">
+                            <i class="fa-solid fa-bolt-lightning"></i>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- 2. Sub-Controls: Meal Count, Workout Time, Default Sources -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                    <!-- Meal Count Selector -->
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800/90">
+                        <label class="block text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-utensils text-emerald-400"></i> عدد الوجبات في اليوم:
+                        </label>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button onclick="setMealCount(3)" id="mealCnt3" class="py-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 transition">3 وجبات</button>
+                            <button onclick="setMealCount(4)" id="mealCnt4" class="py-2 rounded-lg text-xs font-bold border border-emerald-500 bg-emerald-500/20 text-emerald-300 transition">4 (المثالي)</button>
+                            <button onclick="setMealCount(5)" id="mealCnt5" class="py-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 transition">5 وجبات</button>
+                        </div>
+                    </div>
+
+                    <!-- Workout Timing Selector -->
+                    <div id="workoutTimingBox" class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800/90 transition-opacity duration-200">
+                        <label class="block text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock text-emerald-400"></i> ميعاد تمرين الحديد:
+                        </label>
+                        <select id="workoutTimeSelect" onchange="setWorkoutTiming(this.value)" class="w-full bg-slate-800 text-white text-xs font-bold rounded-lg px-3 py-2.5 border border-slate-700 focus:outline-none focus:border-emerald-500">
+                            <option value="afternoon" selected>عصراً / بعد الظهر (بين الوجبة 2 و 3)</option>
+                            <option value="morning">صباحاً (بعد الوجبة 1)</option>
+                            <option value="night">مساءً (قبل الوجبة الأخيرة)</option>
+                        </select>
+                    </div>
+
+                    <!-- Global Default Carb Source Selector -->
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800/90">
+                        <label class="block text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wheat-awn text-amber-400"></i> نوع الكارب الأساسي اليوم:
+                        </label>
+                        <select id="globalCarbSource" onchange="applyGlobalCarbSource(this.value)" class="w-full bg-slate-800 text-white text-xs font-bold rounded-lg px-3 py-2.5 border border-slate-700 focus:outline-none focus:border-emerald-500">
+                            <option value="dry_starch">نشويات جافة (أرز / مكرونة / شوفان)</option>
+                            <option value="tubers">نشويات ثابتة (بطاطس / بطاطا)</option>
+                            <option value="bread">عيش / مخبوزات / توست</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Summary Macros & Progress Card (4 cols) -->
+            <div class="lg:col-span-4 glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between border border-slate-800">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-chart-pie text-emerald-400"></i> إجمالي الماكروز الصافية
+                        </span>
+                        <span id="dayBadgePill" class="text-xs font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            هاي كارب 🔥
+                        </span>
+                    </div>
+
+                    <!-- Total Calories Display -->
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-xs text-slate-400">إجمالي السعرات المستهدفة</p>
+                            <div class="flex items-baseline gap-1.5 mt-0.5">
+                                <span id="totalCaloriesDisplay" class="text-3xl font-black text-white">2,805</span>
+                                <span class="text-xs font-bold text-emerald-400">سعرة / يوم</span>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <span class="text-[11px] text-slate-400 block">هدف الوزن</span>
+                            <span class="text-sm font-extrabold text-white">ثبات وتنشيف عضلي</span>
+                        </div>
+                    </div>
+
+                    <!-- Pure Macros Grid (Net Grams) -->
+                    <div class="grid grid-cols-3 gap-2.5 text-center">
+                        <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
+                            <span class="text-[11px] font-bold text-emerald-400 block">كارب صافي</span>
+                            <span id="netCarbsDisplay" class="text-xl font-black text-white mt-1 block">370g</span>
+                            <span class="text-[10px] text-slate-400">ماكرو</span>
+                        </div>
+                        <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
+                            <span class="text-[11px] font-bold text-sky-400 block">بروتين صافي</span>
+                            <span id="netProteinDisplay" class="text-xl font-black text-white mt-1 block">170g</span>
+                            <span class="text-[10px] text-slate-400">ماكرو</span>
+                        </div>
+                        <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
+                            <span class="text-[11px] font-bold text-amber-400 block">دهون صحية</span>
+                            <span id="netFatDisplay" class="text-xl font-black text-white mt-1 block">60g</span>
+                            <span class="text-[10px] text-slate-400">صافي</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Meal Completion Tracker -->
+                <div class="mt-6 pt-4 border-t border-slate-800">
+                    <div class="flex items-center justify-between text-xs mb-2">
+                        <span class="font-bold text-slate-300">إنجاز وجبات اليوم:</span>
+                        <span id="mealProgressText" class="font-black text-emerald-400">0 من 4 وجبات (0%)</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                        <div id="mealProgressBar" class="h-full bg-gradient-to-l from-emerald-400 to-teal-500 transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Total Scale Weight (Before vs After Cooking) Banner -->
+        <section class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-800">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-emerald-400"></i>
+                        إجمالي وزن الأكل الفعلي على الميزان اليوم (قبل وبعد الطبخ)
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">
+                        الأرقام دي هي مجموع أوزان وجباتك كلها على الميزان بناءً على معاملات الطبخ اللي إنت مختارها في الجدول تحت (بدون فرض نوع أكل معين).
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 self-start md:self-auto">
+                    <span class="text-xs text-slate-400">معامل البروتين:</span>
+                    <select id="globalProteinSource" onchange="applyGlobalProteinSource(this.value)" class="bg-slate-900 text-white text-xs font-bold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-sky-500">
+                        <option value="meat_poultry">لحوم / صدور دجاج / سمك (يفقد 28% مياه بالطبخ)</option>
+                        <option value="eggs_dairy">بيض / جبن قريش / تونة (وزن ثابت قبل وبعد)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 3 Big Scale Cards: Carbs, Protein, Fats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                
+                <!-- 1. Total Carb Scale Weight Card -->
+                <div class="bg-slate-900/90 rounded-2xl p-4 border border-emerald-500/30 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-extrabold text-emerald-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bowl-rice"></i> إجمالي وزن مصادر الكارب
+                        </span>
+                        <span id="carbCardMacroTag" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300">370g صافي</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800/80 text-center">
+                            <span class="text-[11px] text-slate-400 block mb-1">قبل الطبخ (وزن ني)</span>
+                            <span id="totalRawCarbWeight" class="text-2xl font-black text-white">495</span>
+                            <span class="text-xs font-bold text-slate-400">جرام</span>
+                        </div>
+                        <div class="bg-emerald-950/30 p-3 rounded-xl border border-emerald-500/30 text-center">
+                            <span class="text-[11px] text-emerald-300 block mb-1">بعد الطبخ (مستوي)</span>
+                            <span id="totalCookedCarbWeight" class="text-2xl font-black text-emerald-400">1185</span>
+                            <span class="text-xs font-bold text-emerald-300">جرام</span>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2.5 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-info text-emerald-400"></i>
+                        <span>النشويات الجافة بتشرب مياه وتزيد ~2.4 ضعف بعد التسوية.</span>
+                    </p>
+                </div>
+
+                <!-- 2. Total Protein Scale Weight Card -->
+                <div class="bg-slate-900/90 rounded-2xl p-4 border border-sky-500/30 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-extrabold text-sky-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-drumstick-bite"></i> إجمالي وزن مصادر البروتين
+                        </span>
+                        <span id="proteinCardMacroTag" class="text-xs font-bold px-2 py-0.5 rounded bg-sky-500/10 text-sky-300">170g صافي</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800/80 text-center">
+                            <span class="text-[11px] text-slate-400 block mb-1">قبل الطبخ (وزن ني)</span>
+                            <span id="totalRawProteinWeight" class="text-2xl font-black text-white">740</span>
+                            <span class="text-xs font-bold text-slate-400">جرام</span>
+                        </div>
+                        <div class="bg-sky-950/30 p-3 rounded-xl border border-sky-500/30 text-center">
+                            <span class="text-[11px] text-sky-300 block mb-1">بعد الطبخ (مستوي)</span>
+                            <span id="totalCookedProteinWeight" class="text-2xl font-black text-sky-400">535</span>
+                            <span class="text-xs font-bold text-sky-300">جرام</span>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2.5 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-info text-sky-400"></i>
+                        <span>اللحوم والدواجن بتفقد ~28% من وزنها مياه بعد الشوي أو السلق.</span>
+                    </p>
+                </div>
+
+                <!-- 3. Total Healthy Fats Scale Weight Card -->
+                <div class="bg-slate-900/90 rounded-2xl p-4 border border-amber-500/30 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-extrabold text-amber-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-droplet"></i> إجمالي الدهون الصحية المضافة
+                        </span>
+                        <span id="fatCardMacroTag" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">60g صافي</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800/80 text-center">
+                            <span class="text-[11px] text-slate-400 block mb-1">كمية الدهون الصافية</span>
+                            <span id="totalRawFatWeight" class="text-2xl font-black text-white">60</span>
+                            <span class="text-xs font-bold text-slate-400">جرام</span>
+                        </div>
+                        <div class="bg-amber-950/30 p-3 rounded-xl border border-amber-500/30 text-center">
+                            <span class="text-[11px] text-amber-300 block mb-1">وزن المكسرات / الزيوت</span>
+                            <span id="totalFoodFatWeight" class="text-2xl font-black text-amber-400">65 - 85</span>
+                            <span class="text-xs font-bold text-amber-300">جرام</span>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2.5 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-info text-amber-400"></i>
+                        <span>وزنها ثابت لا يتغير بالطبخ (شامل الدهون الطبيعية في الأكل).</span>
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 3: Dynamic Meal-by-Meal Breakdown Cards -->
+        <section class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-emerald-400"></i>
+                        توزيع الجرامات على مدار الوجبات (قبل وبعد الطبخ)
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        تقدر تغير نوع مصدر الكارب أو البروتين **داخل كل وجبة لوحدها** لو حابب تنوع على مدار اليوم، وهتتحدث الجرامات فوراً!
+                    </p>
+                </div>
+                <button onclick="clearCompletedMeals()" class="text-xs font-bold text-slate-400 hover:text-white bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 self-start sm:self-auto transition">
+                    <i class="fa-regular fa-square-check ml-1"></i> تصفير علامات الوجبات لليوم الجديد
+                </button>
+            </div>
+
+            <!-- Dynamic Meals Grid Container -->
+            <div id="mealsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- SECTION 4: Instant Custom Scale Weight Converter + Weekly Planner -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Instant Food Scale Converter (5 cols) -->
+            <div class="lg:col-span-5 glass-card rounded-2xl p-5 sm:p-6 border border-slate-800 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase mb-1">
+                        <i class="fa-solid fa-calculator"></i> أداة الميزان السريعة
+                    </div>
+                    <h3 class="text-lg font-black text-white mb-2">حاسبة تحويل الوزن الفوري (ني ⇄ مطبوخ)</h3>
+                    <p class="text-xs text-slate-400 mb-5">
+                        لو قدامك كمية أكل جاهزة (مطبوخة) وعايز تعرف هي تعادل كام جرام قبل الطبخ وبتغطي قد إيه من ماكروز يومك، أو العكس:
+                    </p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">1. اختار نوع العنصر على الميزان:</label>
+                            <select id="convCategory" onchange="runQuickConverter()" class="w-full bg-slate-900 text-white text-xs font-bold rounded-xl px-3.5 py-2.5 border border-slate-700 focus:outline-none focus:border-emerald-500">
+                                <option value="dry_starch">نشويات جافة (أرز / مكرونة / شوفان)</option>
+                                <option value="tubers">بطاطس / بطاطا (مسلوقة أو مشوية)</option>
+                                <option value="bread">عيش / توست / مخبوزات</option>
+                                <option value="meat_poultry">صدور دجاج / لحم أحمر صافي / سمك</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">الوزن على الميزان (جم):</label>
+                                <input id="convInputGrams" type="number" value="150" oninput="runQuickConverter()" class="w-full bg-slate-900 text-white font-black text-base rounded-xl px-3.5 py-2 border border-slate-700 focus:outline-none focus:border-emerald-500 text-center">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">حالة الوزن اللي كتبته:</label>
+                                <select id="convState" onchange="runQuickConverter()" class="w-full bg-slate-900 text-white text-xs font-bold rounded-xl px-3 py-2.5 border border-slate-700 focus:outline-none focus:border-emerald-500">
+                                    <option value="raw">قبل الطبخ (وزن ني)</option>
+                                    <option value="cooked">بعد الطبخ (مستوي جاهز)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Converter Output Box -->
+                <div class="mt-5 bg-slate-900/95 rounded-2xl p-4 border border-emerald-500/30">
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="p-2 rounded-xl bg-slate-950/70">
+                            <span class="text-[11px] text-slate-400 block">الوزن ني</span>
+                            <span id="convOutRaw" class="text-lg font-black text-white">150g</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-950/70">
+                            <span class="text-[11px] text-slate-400 block">الوزن مطبوخ</span>
+                            <span id="convOutCooked" class="text-lg font-black text-emerald-400">360g</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-950/70">
+                            <span class="text-[11px] text-slate-400 block">الماكرو الصافي</span>
+                            <span id="convOutNetMacro" class="text-lg font-black text-amber-400">113g</span>
+                        </div>
+                    </div>
+                    <p id="convPercentNote" class="text-center text-xs text-slate-300 mt-3 font-semibold">
+                        تغطي هذه الكمية حوالي 30% من احتياج الكارب اليومي.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Interactive 7-Day Carb Cycle Planner (7 cols) -->
+            <div class="lg:col-span-7 glass-card rounded-2xl p-5 sm:p-6 border border-slate-800 flex flex-col justify-between">
+                <div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div>
+                            <span class="text-xs font-bold text-emerald-400 uppercase flex items-center gap-1.5">
+                                <i class="fa-solid fa-calendar-week"></i> الجدول الأسبوعي التفاعلي
+                            </span>
+                            <h3 class="text-lg font-black text-white">توزيع أيام الهاي كارب واللو كارب خلال الأسبوع</h3>
+                        </div>
+                        <span id="weeklySplitSummary" class="text-xs font-bold px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-slate-300">
+                            4 أيام هاي كارب / 3 أيام لو كارب
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-5">
+                        اضغط على أي يوم في الجدول لتبديله بين **يوم حديد (High Carb)** أو **يوم راحة / تمرين خفيف (Low Carb)** حسب جدولك، أو اضغط "تطبيق اليوم" لعرض جراماته فوراً.
+                    </p>
+
+                    <!-- 7 Days Grid -->
+                    <div id="weeklyDaysGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Weekly Total Averages Footer -->
+                <div class="mt-6 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <span class="text-slate-400">متوسط السعرات الأسبوعي:</span>
+                            <strong id="weeklyAvgCalories" class="text-white font-black mr-1">2,630 سعرة/يوم</strong>
+                        </div>
+                        <div class="hidden sm:block text-slate-700">|</div>
+                        <div>
+                            <span class="text-slate-400">الهدف:</span>
+                            <strong class="text-emerald-400 font-bold mr-1">زيادة عضل صافي + تنشيف (Recomp)</strong>
+                        </div>
+                    </div>
+                    <span class="text-[11px] text-slate-400">يتم حفظ جدولك تلقائياً على جهازك</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SECTION 5: Duration & 12-Week Cycle Roadmap (تمشي على النظام قد إيه؟) -->
+        <section class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-800">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                    <span class="text-xs font-bold text-amber-400 uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-route"></i> خطة الاستمرار والتقييم
+                    </span>
+                    <h2 class="text-xl font-black text-white mt-0.5">تمشي على النظام لمدة قد إيه؟ وإزاي تقيم نتيجتك؟</h2>
+                </div>
+                <!-- Current Week Selector -->
+                <div class="flex items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-800 self-start md:self-auto">
+                    <span class="text-xs font-bold text-slate-300 px-2">الأسبوع الحالي في السيستم:</span>
+                    <select id="currentCycleWeek" onchange="saveCycleWeek(this.value)" class="bg-slate-800 text-emerald-400 font-black text-xs rounded-lg px-3 py-1.5 border border-slate-700 focus:outline-none">
+                        <!-- Populated 1 to 12 -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- 3 Phase Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+                
+                <!-- Phase 1: Weeks 1-4 -->
+                <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300">المرحلة الأولى: الأسابيع 1 - 4</span>
+                        <i class="fa-solid fa-battery-half text-emerald-400"></i>
+                    </div>
+                    <h4 class="text-base font-extrabold text-white mb-1.5">امتلاء العضلات وضبط حساسية الإنسولين</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        في أول 4 أسابيع التزم بالجرامات الأساسية لوزنك (78.7 كجم). جسمك هيبدأ يوجه الكارب في أيام الحديد للعضلات، وفي أيام الراحة هيسحب من مخزون الدهون بدون ما تخسر وزن أو طاقة.
+                    </p>
+                </div>
+
+                <!-- Phase 2: Week 4 Checkpoint -->
+                <div class="bg-slate-900/80 rounded-2xl p-4 border border-amber-500/40 relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300">نقطة التقييم: بعد الأسبوع 4</span>
+                        <i class="fa-solid fa-tape text-amber-400"></i>
+                    </div>
+                    <h4 class="text-base font-extrabold text-white mb-1.5">التقييم بالمازورة والمراية (مش الميزان بس!)</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                        لأنك بتعمل Recomposition، وزنك على الميزان ممكن يفضل ثابت عند ~78.7 كجم، لكن مقاس وسطك هيقل ومقاس ذراعك وصدرك هيزيد والتنشيف هيبان.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setMacroTweak('boost')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition">
+                            لو وزنك بينزل بسرعة: اضغط لزيادة +50ج كارب ني
+                        </button>
+                        <button onclick="setMacroTweak('cut')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition">
+                            لو التنشيف بطيء: اضغط لتقليل -30ج كارب ني
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Phase 3: Weeks 5-12 -->
+                <div class="bg-slate-900/80 rounded-2xl p-4 border border-sky-500/30 relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300">المرحلة النهائية: الأسابيع 5 - 12</span>
+                        <i class="fa-solid fa-trophy text-sky-400"></i>
+                    </div>
+                    <h4 class="text-base font-extrabold text-white mb-1.5">أقصى تنشيف وروزمانة عضلية (8 إلى 12 أسبوع)</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        المدة المثالية للسيستم هي **8 إلى 12 أسبوع (شهرين لـ 3 شهور)**. في الفترة دي بيظهر الفرق البصري الواضح في العروق وتفاصيل العضلات (Definition) مع ثبات قوتك وأوزانك في الجيم.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Application Logic -->
+    <script>
+        // ==========================================
+        // 1. CONVERSION FACTORS (RAW <-> COOKED)
+        // ==========================================
+        const CARB_FACTORS = {
+            dry_starch: {
+                id: 'dry_starch',
+                name: 'نشويات جافة (أرز / مكرونة / شوفان)',
+                shortName: 'نشويات جافة (أرز/مكرونة/شوفان)',
+                netCarbPer100gRaw: 75,   // 100g raw rice/oats = ~75g net carbs
+                cookMultiplier: 2.4,     // 100g raw cooks to ~240g
+                note: 'تزيد ~2.4 ضعف بعد التسوية'
+            },
+            tubers: {
+                id: 'tubers',
+                name: 'نشويات ثابتة (بطاطس / بطاطا)',
+                shortName: 'بطاطس / بطاطا',
+                netCarbPer100gRaw: 20,   // 100g raw potato = ~20g net carbs
+                cookMultiplier: 0.95,    // stays almost same weight (95%)
+                note: 'وزنها ثابت تقريباً بعد السلق/الشوي'
+            },
+            bread: {
+                id: 'bread',
+                name: 'عيش / مخبوزات / توست',
+                shortName: 'عيش / توست',
+                netCarbPer100gRaw: 50,   // 100g bread = ~50g net carbs
+                cookMultiplier: 1.0,     // ready to eat
+                note: 'وزن جاهز للأكل مباشرة'
+            }
+        };
+
+        const PROTEIN_FACTORS = {
+            meat_poultry: {
+                id: 'meat_poultry',
+                name: 'لحوم ودواجن وأسماك صافية',
+                netProteinPer100gRaw: 23, // 100g raw chicken/beef/fish = ~23g protein
+                cookMultiplier: 0.72      // loses ~28% water when cooked
+            },
+            eggs_dairy: {
+                id: 'eggs_dairy',
+                name: 'بيض / جبن قريش / تونة مصفاة',
+                netProteinPer100gRaw: 18, // blended average for non-shrinking protein sources
+                cookMultiplier: 1.0       // no cooking shrinkage
+            }
+        };
+
+        // ==========================================
+        // 2. APPLICATION STATE & DEFAULTS
+        // ==========================================
+        let state = {
+            weight: 78.7,
+            height: 178,
+            dayType: 'high',           // 'high' or 'low'
+            mealCount: 4,              // 3, 4, or 5
+            workoutTiming: 'afternoon',// 'morning', 'afternoon', 'night'
+            macroTweak: 'normal',      // 'normal', 'boost' (+50g raw carb), 'cut' (-30g raw carb)
+            globalCarbSource: 'dry_starch',
+            globalProteinSource: 'meat_poultry',
+            mealCarbSources: ['dry_starch', 'dry_starch', 'dry_starch', 'dry_starch', 'dry_starch'],
+            completedMeals: [false, false, false, false, false],
+            currentWeek: 1,
+            weeklySchedule: [
+                { day: 'السبت', type: 'high', label: 'تمرين حديد' },
+                { day: 'الأحد', type: 'low', label: 'راحة / خفيف' },
+                { day: 'الإثنين', type: 'high', label: 'تمرين حديد' },
+                { day: 'الثلاثاء', type: 'low', label: 'راحة / خفيف' },
+                { day: 'الأربعاء', type: 'high', label: 'تمرين حديد' },
+                { day: 'الخميس', type: 'high', label: 'تمرين حديد' },
+                { day: 'الجمعة', type: 'low', label: 'راحة واستشفاء' }
+            ]
+        };
+
+        // Load saved state from localStorage if available
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('carbCycleRecompState_v1');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                }
+            } catch (e) {
+                console.warn('Could not load state from localStorage', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('carbCycleRecompState_v1', JSON.stringify(state));
+            } catch (e) {
+                console.warn('Could not save state', e);
+            }
+        }
+
+        function resetToDefaults() {
+            localStorage.removeItem('carbCycleRecompState_v1');
+            state = {
+                weight: 78.7,
+                height: 178,
+                dayType: 'high',
+                mealCount: 4,
+                workoutTiming: 'afternoon',
+                macroTweak: 'normal',
+                globalCarbSource: 'dry_starch',
+                globalProteinSource: 'meat_poultry',
+                mealCarbSources: ['dry_starch', 'dry_starch', 'dry_starch', 'dry_starch', 'dry_starch'],
+                completedMeals: [false, false, false, false, false],
+                currentWeek: 1,
+                weeklySchedule: [
+                    { day: 'السبت', type: 'high', label: 'تمرين حديد' },
+                    { day: 'الأحد', type: 'low', label: 'راحة / خفيف' },
+                    { day: 'الإثنين', type: 'high', label: 'تمرين حديد' },
+                    { day: 'الثلاثاء', type: 'low', label: 'راحة / خفيف' },
+                    { day: 'الأربعاء', type: 'high', label: 'تمرين حديد' },
+                    { day: 'الخميس', type: 'high', label: 'تمرين حديد' },
+                    { day: 'الجمعة', type: 'low', label: 'راحة واستشفاء' }
+                ]
+            };
+            syncInputsFromState();
+            renderAll();
+        }
+
+        // ==========================================
+        // 3. CORE MACRO & DISTRIBUTION CALCULATIONS
+        // ==========================================
+        function getDailyTargetMacros(dayTypeOverride = null) {
+            const activeDay = dayTypeOverride || state.dayType;
+            // Scale proportionally around baseline 78.7 kg
+            const weightRatio = state.weight / 78.7;
+
+            let netCarbs, netProtein, netFat;
+
+            if (activeDay === 'high') {
+                // High Carb Baseline for 78.7kg: 370g Net Carbs (~495g raw rice), 170g Net Protein, 60g Fat
+                netCarbs = Math.round(370 * weightRatio);
+                netProtein = Math.round(170 * weightRatio);
+                netFat = Math.round(60 * weightRatio);
+            } else {
+                // Low Carb Baseline for 78.7kg: 150g Net Carbs (~200g raw rice), 180g Net Protein, 100g Fat
+                netCarbs = Math.round(150 * weightRatio);
+                netProtein = Math.round(180 * weightRatio);
+                netFat = Math.round(100 * weightRatio);
+            }
+
+            // Apply 4-Week Checkpoint Tweaks (+50g raw carb ≈ +38g net carb, -30g raw carb ≈ -22g net carb)
+            if (state.macroTweak === 'boost') {
+                netCarbs += 38;
+            } else if (state.macroTweak === 'cut') {
+                netCarbs = Math.max(60, netCarbs - 22);
+            }
+
+            const calories = (netCarbs * 4) + (netProtein * 4) + (netFat * 9);
+            return { netCarbs, netProtein, netFat, calories };
+        }
+
+        // Returns array of meal templates with carb/protein/fat percentages & badges
+        function getMealDistributionPlan() {
+            const count = state.mealCount;
+            const isHigh = state.dayType === 'high';
+            const timing = state.workoutTiming;
+
+            let carbShares = [];
+            let fatShares = [];
+            let mealTitles = [];
+            let mealBadges = [];
+
+            if (isHigh) {
+                // HIGH CARB DAY: Concentrate ~60% of carbs in Pre & Post workout meals
+                if (count === 3) {
+                    mealTitles = ['الوجبة الأولى (الإفطار)', 'الوجبة الثانية (الغداء)', 'الوجبة الثالثة (العشاء)'];
+                    if (timing === 'morning') {
+                        carbShares = [0.35, 0.40, 0.25];
+                        fatShares = [0.25, 0.30, 0.45];
+                        mealBadges = ['وجبة قبل التمرين ⚡', 'وجبة بعد التمرين 💪', 'وجبة استشفاء مسائية'];
+                    } else if (timing === 'afternoon') {
+                        carbShares = [0.25, 0.40, 0.35];
+                        fatShares = [0.40, 0.30, 0.30];
+                        mealBadges = ['طاقة صباحية', 'وجبة قبل التمرين ⚡', 'وجبة بعد التمرين 💪'];
+                    } else {
+                        carbShares = [0.20, 0.35, 0.45];
+                        fatShares = [0.45, 0.30, 0.25];
+                        mealBadges = ['طاقة صباحية', 'وجبة قبل التمرين ⚡', 'وجبة بعد التمرين 💪'];
+                    }
+                } else if (count === 4) {
+                    mealTitles = ['الوجبة الأولى', 'الوجبة الثانية', 'الوجبة الثالثة', 'الوجبة الرابعة (العشاء)'];
+                    if (timing === 'morning') {
+                        carbShares = [0.30, 0.32, 0.20, 0.18];
+                        fatShares = [0.20, 0.20, 0.30, 0.30];
+                        mealBadges = ['وجبة قبل التمرين ⚡', 'وجبة بعد التمرين 💪', 'تغذية العضلات', 'وجبة العشاء'];
+                    } else if (timing === 'afternoon') {
+                        // Classic 4-meal split matching user's exact baseline (100g, 150g, 150g, 90g raw)
+                        carbShares = [0.21, 0.31, 0.31, 0.17];
+                        fatShares = [0.25, 0.25, 0.17, 0.33];
+                        mealBadges = ['وجبة الإفطار والطاقة', 'وجبة قبل التمرين بـ 2-3 ساعات ⚡', 'وجبة بعد التمرين مباشرة 💪', 'وجبة العشاء والاستشفاء'];
+                    } else {
+                        carbShares = [0.18, 0.20, 0.30, 0.32];
+                        fatShares = [0.30, 0.30, 0.20, 0.20];
+                        mealBadges = ['وجبة الإفطار', 'وجبة منتصف اليوم', 'وجبة قبل التمرين ⚡', 'وجبة بعد التمرين 💪'];
+                    }
+                } else {
+                    // 5 Meals
+                    mealTitles = ['الوجبة الأولى', 'الوجبة الثانية', 'الوجبة الثالثة', 'الوجبة الرابعة', 'الوجبة الخامسة'];
+                    if (timing === 'morning') {
+                        carbShares = [0.26, 0.28, 0.18, 0.16, 0.12];
+                        fatShares = [0.15, 0.15, 0.20, 0.25, 0.25];
+                        mealBadges = ['قبل التمرين ⚡', 'بعد التمرين 💪', 'وجبة 3', 'وجبة 4', 'العشاء'];
+                    } else if (timing === 'afternoon') {
+                        carbShares = [0.16, 0.26, 0.28, 0.16, 0.14];
+                        fatShares = [0.20, 0.15, 0.15, 0.25, 0.25];
+                        mealBadges = ['الإفطار', 'قبل التمرين ⚡', 'بعد التمرين 💪', 'وجبة 4', 'العشاء'];
+                    } else {
+                        carbShares = [0.14, 0.16, 0.16, 0.26, 0.28];
+                        fatShares = [0.25, 0.25, 0.20, 0.15, 0.15];
+                        mealBadges = ['الإفطار', 'وجبة 2', 'وجبة 3', 'قبل التمرين ⚡', 'بعد التمرين 💪'];
+                    }
+                }
+            } else {
+                // LOW CARB DAY: Taper carbs down so the last meal has 0g starchy carbs (optimal fat burning & insulin sensitivity)
+                if (count === 3) {
+                    mealTitles = ['الوجبة الأولى (الإفطار)', 'الوجبة الثانية (الغداء)', 'الوجبة الثالثة (العشاء - زيرو كارب)'];
+                    carbShares = [0.55, 0.45, 0.0];
+                    fatShares = [0.33, 0.33, 0.34];
+                    mealBadges = ['طاقة بداية اليوم', 'منتصف اليوم', 'بروتين + دهون صحية + خضار ورقي 🥗'];
+                } else if (count === 4) {
+                    mealTitles = ['الوجبة الأولى', 'الوجبة الثانية', 'الوجبة الثالثة', 'الوجبة الرابعة (العشاء - زيرو كارب)'];
+                    carbShares = [0.35, 0.35, 0.30, 0.0];
+                    fatShares = [0.25, 0.25, 0.25, 0.25];
+                    mealBadges = ['وجبة 1 (نشويات محسوبة)', 'وجبة 2 (نشويات محسوبة)', 'وجبة 3 (نشويات محسوبة)', 'زيرو كارب نشوي (بروتين + دهون + سلطة) 🔥'];
+                } else {
+                    mealTitles = ['الوجبة الأولى', 'الوجبة الثانية', 'الوجبة الثالثة', 'الوجبة الرابعة', 'الوجبة الخامسة (زيرو كارب)'];
+                    carbShares = [0.30, 0.30, 0.25, 0.15, 0.0];
+                    fatShares = [0.20, 0.20, 0.20, 0.20, 0.20];
+                    mealBadges = ['وجبة 1', 'وجبة 2', 'وجبة 3', 'وجبة 4', 'عشاء زيرو كارب نشوي 🔥'];
+                }
+            }
+
+            // Protein is distributed evenly across all meals for steady muscle protein synthesis (MPS)
+            const proteinShare = 1 / count;
+
+            const plan = [];
+            for (let i = 0; i < count; i++) {
+                plan.push({
+                    index: i,
+                    title: mealTitles[i],
+                    badge: mealBadges[i],
+                    carbShare: carbShares[i],
+                    proteinShare: proteinShare,
+                    fatShare: fatShares[i],
+                    isWorkoutMeal: isHigh && (mealBadges[i].includes('قبل التمرين') || mealBadges[i].includes('بعد التمرين')),
+                    isZeroCarbMeal: !isHigh && carbShares[i] === 0
+                });
+            }
+            return plan;
+        }
+
+        // Convert net macro grams into Raw & Cooked scale weights
+        function convertCarbGrams(netCarbGrams, sourceKey) {
+            if (netCarbGrams <= 0) return { raw: 0, cooked: 0 };
+            const factor = CARB_FACTORS[sourceKey] || CARB_FACTORS.dry_starch;
+            // Round to nearest 5g for practical kitchen scale weighing
+            const raw = Math.round(((netCarbGrams / factor.netCarbPer100gRaw) * 100) / 5) * 5;
+            const cooked = Math.round((raw * factor.cookMultiplier) / 5) * 5;
+            return { raw, cooked };
+        }
+
+        function convertProteinGrams(netProteinGrams, sourceKey) {
+            const factor = PROTEIN_FACTORS[sourceKey] || PROTEIN_FACTORS.meat_poultry;
+            const raw = Math.round(((netProteinGrams / factor.netProteinPer100gRaw) * 100) / 5) * 5;
+            const cooked = Math.round((raw * factor.cookMultiplier) / 5) * 5;
+            return { raw, cooked };
+        }
+
+        // ==========================================
+        // 4. UI RENDERERS & INTERACTION HANDLERS
+        // ==========================================
+        function syncInputsFromState() {
+            document.getElementById('userWeightInput').value = state.weight;
+            document.getElementById('userHeightInput').value = state.height;
+            document.getElementById('workoutTimeSelect').value = state.workoutTiming;
+            document.getElementById('globalCarbSource').value = state.globalCarbSource;
+            document.getElementById('globalProteinSource').value = state.globalProteinSource;
+
+            // Populate cycle week dropdown
+            const weekSel = document.getElementById('currentCycleWeek');
+            weekSel.innerHTML = '';
+            for (let w = 1; w <= 12; w++) {
+                const opt = document.createElement('option');
+                opt.value = w;
+                opt.textContent = `الأسبوع ${w} من 12`;
+                if (w === Number(state.currentWeek)) opt.selected = true;
+                weekSel.appendChild(opt);
+            }
+        }
+
+        function updateProfileStats() {
+            const w = parseFloat(document.getElementById('userWeightInput').value);
+            const h = parseFloat(document.getElementById('userHeightInput').value);
+            if (!isNaN(w) && w >= 40 && w <= 180) state.weight = w;
+            if (!isNaN(h) && h >= 120 && h <= 230) state.height = h;
+            saveState();
+            renderAll();
+        }
+
+        function setDayType(type) {
+            state.dayType = type;
+            saveState();
+            renderAll();
+        }
+
+        function setMealCount(count) {
+            state.mealCount = count;
+            saveState();
+            renderAll();
+        }
+
+        function setWorkoutTiming(timing) {
+            state.workoutTiming = timing;
+            saveState();
+            renderAll();
+        }
+
+        function setMacroTweak(tweak) {
+            state.macroTweak = tweak;
+            saveState();
+            renderAll();
+        }
+
+        function applyGlobalCarbSource(sourceKey) {
+            state.globalCarbSource = sourceKey;
+            state.mealCarbSources = state.mealCarbSources.map(() => sourceKey);
+            saveState();
+            renderAll();
+        }
+
+        function applyGlobalProteinSource(sourceKey) {
+            state.globalProteinSource = sourceKey;
+            saveState();
+            renderAll();
+        }
+
+        function setMealSpecificCarbSource(mealIndex, sourceKey) {
+            state.mealCarbSources[mealIndex] = sourceKey;
+            saveState();
+            renderAll();
+        }
+
+        function toggleMealCompleted(mealIndex) {
+            state.completedMeals[mealIndex] = !state.completedMeals[mealIndex];
+            saveState();
+            renderAll();
+        }
+
+        function clearCompletedMeals() {
+            state.completedMeals = [false, false, false, false, false];
+            saveState();
+            renderAll();
+        }
+
+        function saveCycleWeek(weekVal) {
+            state.currentWeek = Number(weekVal);
+            saveState();
+        }
+
+        // Render Control Panel Visual States
+        function renderControlsState() {
+            const isHigh = state.dayType === 'high';
+            const mainCard = document.getElementById('mainControlCard');
+            const headerIcon = document.getElementById('headerIconBox');
+            const btnHigh = document.getElementById('btnHighCarb');
+            const btnLow = document.getElementById('btnLowCarb');
+            const badgePill = document.getElementById('dayBadgePill');
+            const workoutBox = document.getElementById('workoutTimingBox');
+
+            if (isHigh) {
+                mainCard.classList.add('high-carb-glow');
+                mainCard.classList.remove('low-carb-glow');
+                headerIcon.className = 'w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xl shadow-inner transition-colors duration-300';
+                btnHigh.className = 'relative overflow-hidden group p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-500/15 text-right transition-all duration-200 flex items-start justify-between shadow-lg';
+                btnLow.className = 'relative overflow-hidden group p-4 rounded-2xl border-2 border-slate-800 bg-slate-900/60 hover:border-slate-700 text-right transition-all duration-200 flex items-start justify-between opacity-75 hover:opacity-100';
+                badgePill.className = 'text-xs font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                badgePill.innerHTML = 'يوم هاي كارب (حديد) 🔥';
+                workoutBox.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                mainCard.classList.remove('high-carb-glow');
+                mainCard.classList.add('low-carb-glow');
+                headerIcon.className = 'w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xl shadow-inner transition-colors duration-300';
+                btnLow.className = 'relative overflow-hidden group p-4 rounded-2xl border-2 border-amber-500 bg-amber-500/15 text-right transition-all duration-200 flex items-start justify-between shadow-lg';
+                btnHigh.className = 'relative overflow-hidden group p-4 rounded-2xl border-2 border-slate-800 bg-slate-900/60 hover:border-slate-700 text-right transition-all duration-200 flex items-start justify-between opacity-75 hover:opacity-100';
+                badgePill.className = 'text-xs font-black px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                badgePill.innerHTML = 'يوم لو كارب (تنشيف/راحة) ⚡';
+                workoutBox.classList.add('opacity-40', 'pointer-events-none');
+            }
+
+            // Meal count buttons
+            [3, 4, 5].forEach(cnt => {
+                const btn = document.getElementById(`mealCnt${cnt}`);
+                if (state.mealCount === cnt) {
+                    btn.className = 'py-2 rounded-lg text-xs font-bold border border-emerald-500 bg-emerald-500/20 text-emerald-300 transition';
+                } else {
+                    btn.className = 'py-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 transition';
+                }
+            });
+
+            // Tweak buttons
+            const tweakMap = {
+                cut: document.getElementById('tweakCutBtn'),
+                normal: document.getElementById('tweakNormalBtn'),
+                boost: document.getElementById('tweakBoostBtn')
+            };
+            Object.keys(tweakMap).forEach(k => {
+                if (state.macroTweak === k) {
+                    tweakMap[k].className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950';
+                } else {
+                    tweakMap[k].className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+                }
+            });
+        }
+
+        // Render Meals & Totals
+        function renderMealsAndTotals() {
+            const dailyMacros = getDailyTargetMacros();
+            const plan = getMealDistributionPlan();
+            const container = document.getElementById('mealsContainer');
+            container.innerHTML = '';
+
+            // Update pure macro summary displays
+            document.getElementById('totalCaloriesDisplay').textContent = dailyMacros.calories.toLocaleString('en-US');
+            document.getElementById('netCarbsDisplay').textContent = `${dailyMacros.netCarbs}g`;
+            document.getElementById('netProteinDisplay').textContent = `${dailyMacros.netProtein}g`;
+            document.getElementById('netFatDisplay').textContent = `${dailyMacros.netFat}g`;
+
+            document.getElementById('carbCardMacroTag').textContent = `${dailyMacros.netCarbs}g صافي`;
+            document.getElementById('proteinCardMacroTag').textContent = `${dailyMacros.netProtein}g صافي`;
+            document.getElementById('fatCardMacroTag').textContent = `${dailyMacros.netFat}g صافي`;
+
+            let sumRawCarb = 0;
+            let sumCookedCarb = 0;
+            let sumRawProtein = 0;
+            let sumCookedProtein = 0;
+            let completedCount = 0;
+
+            plan.forEach((meal, idx) => {
+                if (state.completedMeals[idx]) completedCount++;
+
+                const mealNetCarb = Math.round(dailyMacros.netCarbs * meal.carbShare);
+                const mealNetProtein = Math.round(dailyMacros.netProtein * meal.proteinShare);
+                const mealNetFat = Math.round(dailyMacros.netFat * meal.fatShare);
+
+                const carbSourceKey = state.mealCarbSources[idx] || state.globalCarbSource;
+                const carbWeights = convertCarbGrams(mealNetCarb, carbSourceKey);
+                const proteinWeights = convertProteinGrams(mealNetProtein, state.globalProteinSource);
+
+                sumRawCarb += carbWeights.raw;
+                sumCookedCarb += carbWeights.cooked;
+                sumRawProtein += proteinWeights.raw;
+                sumCookedProtein += proteinWeights.cooked;
+
+                const isDone = state.completedMeals[idx];
+                const borderStyle = meal.isWorkoutMeal
+                    ? 'border-emerald-500/60 bg-slate-900/95'
+                    : meal.isZeroCarbMeal
+                    ? 'border-amber-500/40 bg-slate-900/90'
+                    : 'border-slate-800 bg-slate-900/80';
+
+                const badgeStyle = meal.isWorkoutMeal
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : meal.isZeroCarbMeal
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    : 'bg-slate-800 text-slate-300 border border-slate-700';
+
+                const cardHTML = `
+                    <div class="rounded-2xl p-5 border ${borderStyle} ${isDone ? 'meal-checked' : ''} transition-all duration-200 flex flex-col justify-between">
+                        <div>
+                            <!-- Card Header -->
+                            <div class="flex items-start justify-between gap-2 pb-3.5 border-b border-slate-800/90">
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="w-6 h-6 rounded-lg bg-slate-800 text-white font-black text-xs flex items-center justify-center">${idx + 1}</span>
+                                        <h3 class="text-base font-black text-white">${meal.title}</h3>
+                                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${badgeStyle}">${meal.badge}</span>
+                                    </div>
+                                </div>
+                                <button onclick="toggleMealCompleted(${idx})" class="px-2.5 py-1 rounded-xl border ${isDone ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:text-white'} text-xs transition flex items-center gap-1.5 shrink-0">
+                                    <i class="fa-solid ${isDone ? 'fa-check-double' : 'fa-check'}"></i>
+                                    <span>${isDone ? 'تمت الوجبة' : 'تحديد كمكتملة'}</span>
+                                </button>
+                            </div>
+
+                            <!-- Per-Meal Carb Category Picker -->
+                            <div class="my-3 flex items-center justify-between gap-2 bg-slate-950/60 px-3 py-2 rounded-xl border border-slate-800/80">
+                                <span class="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                                    <i class="fa-solid fa-sliders text-emerald-400"></i> مصدر كارب الوجبة:
+                                </span>
+                                ${meal.isZeroCarbMeal ? `
+                                    <span class="text-xs font-extrabold text-amber-400">خضروات ورقية وألياف فقط (0 جم نشويات)</span>
+                                ` : `
+                                    <select onchange="setMealSpecificCarbSource(${idx}, this.value)" class="bg-slate-800 text-white text-xs font-bold rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none focus:border-emerald-500">
+                                        <option value="dry_starch" ${carbSourceKey === 'dry_starch' ? 'selected' : ''}>نشويات جافة (أرز / مكرونة / شوفان)</option>
+                                        <option value="tubers" ${carbSourceKey === 'tubers' ? 'selected' : ''}>بطاطس / بطاطا</option>
+                                        <option value="bread" ${carbSourceKey === 'bread' ? 'selected' : ''}>عيش / مخبوزات / توست</option>
+                                    </select>
+                                `}
+                            </div>
+
+                            <!-- Before vs After Cooking Table inside Meal -->
+                            <div class="grid grid-cols-3 gap-2.5 mt-3">
+                                <!-- CARB COLUMN -->
+                                <div class="bg-slate-950/90 p-3 rounded-xl border border-emerald-500/20">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-extrabold text-emerald-400">الكارب</span>
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300">${mealNetCarb}g صافي</span>
+                                    </div>
+                                    ${meal.isZeroCarbMeal ? `
+                                        <div class="py-3 text-center">
+                                            <span class="text-lg font-black text-amber-400 block">0 جرام</span>
+                                            <span class="text-[10px] text-slate-400">بدون نشويات</span>
+                                        </div>
+                                    ` : `
+                                        <div class="space-y-1.5">
+                                            <div class="flex items-baseline justify-between bg-slate-900 px-2 py-1 rounded-lg">
+                                                <span class="text-[10px] text-slate-400">قبل الطبخ:</span>
+                                                <span class="text-sm font-black text-white">${carbWeights.raw} <small class="text-[10px] font-normal">جم</small></span>
+                                            </div>
+                                            <div class="flex items-baseline justify-between bg-emerald-950/40 border border-emerald-500/30 px-2 py-1 rounded-lg">
+                                                <span class="text-[10px] text-emerald-300">بعد الطبخ:</span>
+                                                <span class="text-sm font-black text-emerald-400">${carbWeights.cooked} <small class="text-[10px] font-normal">جم</small></span>
+                                            </div>
+                                        </div>
+                                    `}
+                                </div>
+
+                                <!-- PROTEIN COLUMN -->
+                                <div class="bg-slate-950/90 p-3 rounded-xl border border-sky-500/20">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-extrabold text-sky-400">البروتين</span>
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-300">${mealNetProtein}g صافي</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-baseline justify-between bg-slate-900 px-2 py-1 rounded-lg">
+                                            <span class="text-[10px] text-slate-400">قبل الطبخ:</span>
+                                            <span class="text-sm font-black text-white">${proteinWeights.raw} <small class="text-[10px] font-normal">جم</small></span>
+                                        </div>
+                                        <div class="flex items-baseline justify-between bg-sky-950/40 border border-sky-500/30 px-2 py-1 rounded-lg">
+                                            <span class="text-[10px] text-sky-300">بعد الطبخ:</span>
+                                            <span class="text-sm font-black text-sky-400">${proteinWeights.cooked} <small class="text-[10px] font-normal">جم</small></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- FATS COLUMN -->
+                                <div class="bg-slate-950/90 p-3 rounded-xl border border-amber-500/20 flex flex-col justify-between">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-extrabold text-amber-400">الدهون</span>
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300">ثابت</span>
+                                    </div>
+                                    <div class="my-auto text-center py-1">
+                                        <span class="text-xl font-black text-white">${mealNetFat}</span>
+                                        <span class="text-xs font-bold text-amber-400">جرام</span>
+                                        <span class="text-[10px] text-slate-400 block">دهون صحية</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHTML);
+            });
+
+            // Update Top Scale Totals Banner
+            document.getElementById('totalRawCarbWeight').textContent = sumRawCarb;
+            document.getElementById('totalCookedCarbWeight').textContent = sumCookedCarb;
+            document.getElementById('totalRawProteinWeight').textContent = sumRawProtein;
+            document.getElementById('totalCookedProteinWeight').textContent = sumCookedProtein;
+            document.getElementById('totalRawFatWeight').textContent = dailyMacros.netFat;
+            document.getElementById('totalFoodFatWeight').textContent = `${dailyMacros.netFat} - ${Math.round(dailyMacros.netFat * 1.25)}`;
+
+            // Update Progress Bar
+            const pct = Math.round((completedCount / state.mealCount) * 100);
+            document.getElementById('mealProgressText').textContent = `${completedCount} من ${state.mealCount} وجبات (${pct}%)`;
+            document.getElementById('mealProgressBar').style.width = `${pct}%`;
+        }
+
+        // Quick Scale Weight Converter Tool
+        function runQuickConverter() {
+            const cat = document.getElementById('convCategory').value;
+            const grams = parseFloat(document.getElementById('convInputGrams').value) || 0;
+            const stateMode = document.getElementById('convState').value; // 'raw' or 'cooked'
+
+            let rawG = 0, cookedG = 0, netMacro = 0, macroLabel = '';
+            const daily = getDailyTargetMacros();
+
+            if (cat === 'meat_poultry') {
+                const factor = PROTEIN_FACTORS.meat_poultry;
+                if (stateMode === 'raw') {
+                    rawG = Math.round(grams);
+                    cookedG = Math.round(grams * factor.cookMultiplier);
+                } else {
+                    cookedG = Math.round(grams);
+                    rawG = Math.round(grams / factor.cookMultiplier);
+                }
+                netMacro = Math.round((rawG / 100) * factor.netProteinPer100gRaw);
+                const pct = Math.min(100, Math.round((netMacro / daily.netProtein) * 100));
+                macroLabel = `تغطي هذه الكمية ${pct}% من احتياج البروتين اليومي (${netMacro} جم بروتين صافي).`;
+            } else {
+                const factor = CARB_FACTORS[cat];
+                if (stateMode === 'raw') {
+                    rawG = Math.round(grams);
+                    cookedG = Math.round(grams * factor.cookMultiplier);
+                } else {
+                    cookedG = Math.round(grams);
+                    rawG = Math.round(grams / factor.cookMultiplier);
+                }
+                netMacro = Math.round((rawG / 100) * factor.netCarbPer100gRaw);
+                const pct = Math.min(100, Math.round((netMacro / daily.netCarbs) * 100));
+                macroLabel = `تغطي هذه الكمية ${pct}% من احتياج الكارب اليومي (${netMacro} جم كارب صافي).`;
+            }
+
+            document.getElementById('convOutRaw').textContent = `${rawG}g`;
+            document.getElementById('convOutCooked').textContent = `${cookedG}g`;
+            document.getElementById('convOutNetMacro').textContent = `${netMacro}g`;
+            document.getElementById('convPercentNote').textContent = macroLabel;
+        }
+
+        // Weekly Interactive Schedule
+        function toggleScheduleDay(dayIdx) {
+            const item = state.weeklySchedule[dayIdx];
+            if (item.type === 'high') {
+                item.type = 'low';
+                item.label = 'راحة / خفيف';
+            } else {
+                item.type = 'high';
+                item.label = 'تمرين حديد';
+            }
+            saveState();
+            renderWeeklySchedule();
+        }
+
+        function renderWeeklySchedule() {
+            const grid = document.getElementById('weeklyDaysGrid');
+            grid.innerHTML = '';
+
+            let highCount = 0;
+            let lowCount = 0;
+
+            state.weeklySchedule.forEach((d, idx) => {
+                const isHigh = d.type === 'high';
+                if (isHigh) highCount++; else lowCount++;
+
+                const dayMacros = getDailyTargetMacros(d.type);
+
+                const card = `
+                    <div class="rounded-xl p-3 border ${isHigh ? 'border-emerald-500/40 bg-emerald-950/20' : 'border-amber-500/30 bg-slate-900/80'} flex flex-col justify-between text-center transition hover:scale-[1.02]">
+                        <div>
+                            <span class="text-xs font-black text-white block">${d.day}</span>
+                            <button onclick="toggleScheduleDay(${idx})" class="mt-2 w-full py-1 px-2 rounded-lg text-[11px] font-extrabold ${isHigh ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'} transition">
+                                ${isHigh ? 'هاي كارب 🔥' : 'لو كارب ⚡'}
+                            </button>
+                            <span class="text-[10px] text-slate-400 block mt-1.5">${d.label}</span>
+                            <span class="text-xs font-extrabold text-white block mt-1">${dayMacros.netCarbs}g كارب</span>
+                        </div>
+                        <button onclick="setDayType('${d.type}')" class="mt-3 text-[10px] font-bold text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-700 py-1 rounded-lg transition">
+                            عرض اليوم
+                        </button>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', card);
+            });
+
+            document.getElementById('weeklySplitSummary').textContent = `${highCount} أيام هاي كارب / ${lowCount} أيام لو كارب`;
+
+            const highCals = getDailyTargetMacros('high').calories;
+            const lowCals = getDailyTargetMacros('low').calories;
+            const avgCals = Math.round(((highCals * highCount) + (lowCals * lowCount)) / 7);
+            document.getElementById('weeklyAvgCalories').textContent = `${avgCals.toLocaleString('en-US')} سعرة/يوم`;
+        }
+
+        function renderAll() {
+            renderControlsState();
+            renderMealsAndTotals();
+            runQuickConverter();
+            renderWeeklySchedule();
+        }
+
+        // Initialize on Window Load
+        window.onload = function () {
+            loadState();
+            syncInputsFromState();
+            renderAll();
+        };
+    </script>
+</body>
+</html>
