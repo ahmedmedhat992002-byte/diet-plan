@@ -210,9 +210,8 @@
                             <i class="fa-solid fa-wheat-awn text-amber-400"></i> نوع الكارب الأساسي اليوم:
                         </label>
                         <select id="globalCarbSource" onchange="applyGlobalCarbSource(this.value)" class="w-full bg-slate-800 text-white text-xs font-bold rounded-lg px-3 py-2.5 border border-slate-700 focus:outline-none focus:border-emerald-500">
-                            <option value="dry_starch">نشويات جافة (أرز / مكرونة / شوفان)</option>
+                            <option value="dry_starch">أرز / مكرونة / عيش وتوست ومخبوزات</option>
                             <option value="tubers">نشويات ثابتة (بطاطس / بطاطا)</option>
-                            <option value="bread">عيش / مخبوزات / توست</option>
                         </select>
                     </div>
                 </div>
@@ -424,9 +423,8 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-300 mb-1.5">1. اختار نوع العنصر على الميزان:</label>
                             <select id="convCategory" onchange="runQuickConverter()" class="w-full bg-slate-900 text-white text-xs font-bold rounded-xl px-3.5 py-2.5 border border-slate-700 focus:outline-none focus:border-emerald-500">
-                                <option value="dry_starch">نشويات جافة (أرز / مكرونة / شوفان)</option>
+                                <option value="dry_starch">أرز / مكرونة / عيش وتوست ومخبوزات</option>
                                 <option value="tubers">بطاطس / بطاطا (مسلوقة أو مشوية)</option>
-                                <option value="bread">عيش / توست / مخبوزات</option>
                                 <option value="meat_poultry">صدور دجاج / لحم أحمر صافي / سمك</option>
                             </select>
                         </div>
@@ -590,11 +588,11 @@
         const CARB_FACTORS = {
             dry_starch: {
                 id: 'dry_starch',
-                name: 'نشويات جافة (أرز / مكرونة / شوفان)',
-                shortName: 'نشويات جافة (أرز/مكرونة/شوفان)',
-                netCarbPer100gRaw: 75,   // 100g raw rice/oats = ~75g net carbs
+                name: 'أرز / مكرونة / عيش وتوست ومخبوزات',
+                shortName: 'أرز / مكرونة / عيش وتوست',
+                netCarbPer100gRaw: 75,   // 100g raw base = ~75g net carbs
                 cookMultiplier: 2.4,     // 100g raw cooks to ~240g
-                note: 'تزيد ~2.4 ضعف بعد التسوية'
+                note: 'تزيد ~2.4 ضعف بعد التسوية للأرز والمكرونة'
             },
             tubers: {
                 id: 'tubers',
@@ -603,16 +601,9 @@
                 netCarbPer100gRaw: 20,   // 100g raw potato = ~20g net carbs
                 cookMultiplier: 0.95,    // stays almost same weight (95%)
                 note: 'وزنها ثابت تقريباً بعد السلق/الشوي'
-            },
-            bread: {
-                id: 'bread',
-                name: 'عيش / مخبوزات / توست',
-                shortName: 'عيش / توست',
-                netCarbPer100gRaw: 50,   // 100g bread = ~50g net carbs
-                cookMultiplier: 1.0,     // ready to eat
-                note: 'وزن جاهز للأكل مباشرة'
             }
         };
+        CARB_FACTORS.bread = CARB_FACTORS.dry_starch;
 
         const PROTEIN_FACTORS = {
             meat_poultry: {
@@ -662,6 +653,10 @@
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     state = { ...state, ...parsed };
+                    if (state.globalCarbSource === 'bread') state.globalCarbSource = 'dry_starch';
+                    if (Array.isArray(state.mealCarbSources)) {
+                        state.mealCarbSources = state.mealCarbSources.map(s => s === 'bread' ? 'dry_starch' : s);
+                    }
                 }
             } catch (e) {
                 console.warn('Could not load state from localStorage', e);
@@ -1079,9 +1074,8 @@
                                     <span class="text-xs font-extrabold text-amber-400">خضروات ورقية وألياف فقط (0 جم نشويات)</span>
                                 ` : `
                                     <select onchange="setMealSpecificCarbSource(${idx}, this.value)" class="bg-slate-800 text-white text-xs font-bold rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none focus:border-emerald-500">
-                                        <option value="dry_starch" ${carbSourceKey === 'dry_starch' ? 'selected' : ''}>نشويات جافة (أرز / مكرونة / شوفان)</option>
+                                        <option value="dry_starch" ${carbSourceKey === 'dry_starch' || carbSourceKey === 'bread' ? 'selected' : ''}>أرز / مكرونة / عيش وتوست ومخبوزات</option>
                                         <option value="tubers" ${carbSourceKey === 'tubers' ? 'selected' : ''}>بطاطس / بطاطا</option>
-                                        <option value="bread" ${carbSourceKey === 'bread' ? 'selected' : ''}>عيش / مخبوزات / توست</option>
                                     </select>
                                 `}
                             </div>
